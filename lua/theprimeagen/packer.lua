@@ -22,63 +22,51 @@ return require('packer').startup(function(use)
     end
   })
 
-    -- Add Tabnine
-  use {
-    'codota/tabnine-nvim',
-    after = 'nvim-cmp',
-    config = function()
-      -- Optional: configure Tabnine
-      require('cmp').setup({
-        sources = {
-          { name = 'cmp_tabnine' },
-        },
-      })
-
-      local tabnine = require('cmp_tabnine.config')
-      tabnine:setup({
-          max_lines = 1000,
-          max_num_results = 20,
-          sort = true,
-          run_on_every_keystroke = true,
-          snippet_placeholder = '..',
-          ignored_file_types = {}, -- specify file types to ignore
-          show_prediction_strength = false,
-      })
-    end,
-    run = './install.sh', -- This command is deprecated in newer versions of the plugin. The plugin should auto-download the binary.
-  }
 
 use {
   'tzachar/cmp-tabnine',
   run = './install.sh',  -- Use this for Unix-like systems. Change to 'powershell ./install.ps1' on Windows if needed.
   after = 'nvim-cmp',
-  requires = 'hrsh7th/nvim-cmp',
+  requires = {
+    'hrsh7th/nvim-cmp',
+    'L3MON4D3/LuaSnip', -- Adding LuaSnip as a requirement
+    'rafamadriz/friendly-snippets' -- Adding friendly-snippets for additional snippets
+  },
   config = function()
     local cmp = require('cmp')
+    local luasnip = require('luasnip')
+
+    -- Load LuaSnip with friendly snippets
+    require("luasnip/loaders/from_vscode").lazy_load()
+
+    -- Setup nvim-cmp to use LuaSnip
     cmp.setup {
+      snippet = {
+        expand = function(args)
+          luasnip.lsp_expand(args.body) -- Use LuaSnip for expanding snippets
+        end,
+      },
       sources = cmp.config.sources({
         { name = 'cmp_tabnine' },
-        -- Specify other sources you want to use. For example:
         { name = 'nvim_lsp' },
-        { name = 'luasnip' },
-        -- You can add more sources here following the pattern.
+        -- Add more sources as needed
       }),
-      -- Include any other configurations for nvim-cmp here.
-      -- For example, snippet support, mapping, formatting, etc.
+      -- Include any other configurations for nvim-cmp here
     }
 
     -- Additional TabNine configuration
     local tabnine = require('cmp_tabnine.config')
     tabnine:setup({
-        max_lines = 1000,  -- Max number of lines to provide suggestions for
-        max_num_results = 20,  -- Max number of suggestions to show
-        sort = true,  -- Whether to sort the suggestions provided by TabNine
-        run_on_every_keystroke = true,  -- Get suggestions on every keystroke
-        snippet_placeholder = '..',  -- Placeholder text for snippets
-        show_prediction_strength = false,  -- Show prediction strength as inline text
+        max_lines = 1000,
+        max_num_results = 20,
+        sort = true,
+        run_on_every_keystroke = true,
+        snippet_placeholder = '..',
+        show_prediction_strength = false,
     })
   end
 }
+
 
   use({
       "folke/trouble.nvim",
@@ -98,6 +86,15 @@ use {
         local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
         ts_update()
       end,}
+
+    -- Rustaceanvim for enhanced Rust development experience in Neovim
+  -- This plugin provides various tools and functionalities specifically designed for Rust
+  use {
+    'mrcjkb/rustaceanvim',
+    version = '^4', -- Recommended version to ensure compatibility and stability
+    ft = { 'rust' }, -- This plugin will only load for Rust files, optimizing startup time
+  }
+
   use("nvim-treesitter/playground")
   use("theprimeagen/harpoon")
   use("theprimeagen/refactoring.nvim")
@@ -133,4 +130,6 @@ use {
   use("eandrju/cellular-automaton.nvim")
   use("laytan/cloak.nvim")
 
-end)
+    end)
+
+
